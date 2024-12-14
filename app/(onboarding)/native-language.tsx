@@ -53,10 +53,14 @@ export default function NativeLanguage() {
               className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5'
               size={'lg'}
             >
-              <View className='flex-row items-center gap-3'>
-                <Text className='text-3xl text-foreground'>{language.icon}</Text>
-                <Text className='text-2xl text-foreground'>{language.label}</Text>
-              </View>
+              {({ pressed }) => {
+                return (
+                  <View className='flex-row items-center gap-3' style={{ opacity: pressed ? 0.5 : 1 }}>
+                    <Text className='text-3xl text-foreground'>{language.icon}</Text>
+                    <Text className='text-2xl text-foreground'>{language.label}</Text>
+                  </View>
+                );
+              }}
             </Button>
           </Link>
         ))}

@@ -27,7 +27,13 @@ export default function AgeSelection() {
         {ageRanges.map((range) => (
           <Link href={'/(onboarding)/native-language'} asChild>
             <Button key={range.label} className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5' size={'lg'}>
-              <Text className='text-xl text-white'>{range.label}</Text>
+              {({ pressed }) => {
+                return (
+                  <View className='flex-row items-center gap-3' style={{ opacity: pressed ? 0.5 : 1 }}>
+                    <Text className='text-xl text-white'>{range.label}</Text>
+                  </View>
+                );
+              }}
             </Button>
           </Link>
         ))}

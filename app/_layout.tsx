@@ -55,15 +55,15 @@ export default function RootLayout() {
     initializeApp();
   }, [setColorScheme]);
 
-  useEffect(() => {
-    if (isColorSchemeLoaded && fontsLoaded) {
-      if (isOnboardingComplete) {
-        router.replace('/book-list');
-      } else {
-        router.replace('/');
-      }
-    }
-  }, [isColorSchemeLoaded, fontsLoaded, isOnboardingComplete, router]);
+  // useEffect(() => {
+  //   if (isColorSchemeLoaded && fontsLoaded) {
+  //     if (isOnboardingComplete) {
+  //       router.replace('/book-list');
+  //     } else {
+  //       router.replace('/');
+  //     }
+  //   }
+  // }, [isColorSchemeLoaded, fontsLoaded, isOnboardingComplete, router]);
 
   useEffect(() => {
     onAppReady();

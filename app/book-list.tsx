@@ -2,11 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import { PlusSquare } from 'lucide-react-native';
-import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icons } from '~/components/icons';
 import { Button } from '~/components/ui/button';
+import { completeOnboarding } from '~/lib/onboarding';
 
 interface Book {
   id: string;
@@ -19,10 +20,10 @@ interface Book {
 
 export default function BooksPage() {
   const router = useRouter();
-  const [books, setBooks] = React.useState<Book[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadBooks = React.useCallback(async () => {
+  const loadBooks = useCallback(async () => {
     try {
       setIsLoading(true);
       const booksJson = await AsyncStorage.getItem('books');
@@ -35,8 +36,9 @@ export default function BooksPage() {
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadBooks();
+    completeOnboarding();
   }, [loadBooks]);
 
   const handleDeleteBook = async (id: string) => {

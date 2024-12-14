@@ -2,10 +2,10 @@ import { Inter_400Regular, Inter_700Bold, useFonts } from '@expo-google-fonts/in
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
-import { SplashScreen, Stack, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
 import '~/global.css';
 import { setAndroidNavigationBar } from '~/lib/android-navigation-bar';
 import { NAV_THEME } from '~/lib/constants';
@@ -19,16 +19,6 @@ export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
-// Custom Splash Screen Component
-function CustomSplashScreen() {
-  return (
-    <View style={styles.splashContainer}>
-      <Text style={styles.splashText}>Loading...</Text>
-      <ActivityIndicator size='large' color='#007aff' />
-    </View>
-  );
-}
-
 export default function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
@@ -39,6 +29,12 @@ export default function RootLayout() {
   });
 
   const router = useRouter();
+
+  const onAppReady = useCallback(async () => {
+    if (isColorSchemeLoaded && fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [isColorSchemeLoaded, fontsLoaded]);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -53,8 +49,6 @@ export default function RootLayout() {
         setIsColorSchemeLoaded(true);
       } catch (error) {
         console.error('Error initializing app:', error);
-      } finally {
-        SplashScreen.hideAsync();
       }
     };
 
@@ -71,8 +65,12 @@ export default function RootLayout() {
     }
   }, [isColorSchemeLoaded, fontsLoaded, isOnboardingComplete, router]);
 
+  useEffect(() => {
+    onAppReady();
+  }, [onAppReady]);
+
   if (!isColorSchemeLoaded || !fontsLoaded) {
-    return <CustomSplashScreen />;
+    return null;
   }
 
   return (
@@ -92,18 +90,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  splashContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  splashText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333333',
-  },
-});

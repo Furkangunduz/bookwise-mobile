@@ -54,7 +54,7 @@ export default function RootLayout() {
           headerShown: false,
         }}
       >
-        <Stack.Screen name='welcome' />
+        <Stack.Screen name='index' />
         <Stack.Screen name='(onboarding)' />
         <Stack.Screen name='(book-upload)/upload' />
       </Stack>

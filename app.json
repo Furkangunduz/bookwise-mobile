@@ -16,7 +16,10 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gunduz.bookwise"
+      "bundleIdentifier": "com.gunduz.bookwise",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to allow you to upload book covers."
+      }
     },
     "android": {
       "adaptiveIcon": {

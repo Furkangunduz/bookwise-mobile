@@ -8,15 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icons } from '~/components/icons';
 import { Button } from '~/components/ui/button';
 import { completeOnboarding } from '~/lib/onboarding';
-
-interface Book {
-  id: string;
-  name: string;
-  uri: string;
-  type: string;
-  size: number;
-  addedAt: number;
-}
+import { Book } from '~/lib/type';
 
 export default function BooksPage() {
   const router = useRouter();
@@ -28,7 +20,7 @@ export default function BooksPage() {
       setIsLoading(true);
       const booksJson = await AsyncStorage.getItem('books');
       const loadedBooks: Book[] = booksJson ? JSON.parse(booksJson) : [];
-      setBooks(loadedBooks.sort((a, b) => b.addedAt - a.addedAt));
+      setBooks(loadedBooks.sort((a, b) => b.lastReadAt - a.lastReadAt));
     } catch (error) {
       console.error('Error loading books:', error);
     } finally {
@@ -80,6 +72,7 @@ export default function BooksPage() {
         type: file.mimeType || 'application/octet-stream',
         size: file.size,
         addedAt: Date.now(),
+        lastReadAt: Date.now(),
       };
 
       const updatedBooks = [...books, newBook];
@@ -102,7 +95,7 @@ export default function BooksPage() {
 
   if (books.length === 0 && !isLoading) {
     return (
-      <SafeAreaView className='flex-1 items-center justify-center gap-10 bg-background px-10 font-inter'>
+      <SafeAreaView className='flex-1 items-center justify-center gap-10 bg-[#14161B] px-10 font-inter'>
         <Image source={require('~/assets/images/book-upload.png')} style={{ width: 150, height: 150 }} />
         <Text className='text-center text-3xl font-bold text-white'>Upload your favorite book and start your journey!</Text>
         <Text className='text-center text-2xl font-light text-[#83899F]'>You can upload book in .EPUB or PDF format</Text>
@@ -117,13 +110,8 @@ export default function BooksPage() {
   }
 
   return (
-    <SafeAreaView className='flex-1 bg-background'>
-      <View className='flex-row items-center justify-between border-b border-border px-4 py-4'>
-        <Text className='text-3xl font-semibold text-foreground'>My Books</Text>
-        <Button size='icon' onPress={pickDocument}>
-          <Icons.Plus className='text-primary-foreground' size={24} />
-        </Button>
-      </View>
+    <SafeAreaView className='flex-1 bg-[#14161B] font-inter'>
+      <Text className='my-5 text-center text-2xl text-[#83899F]'>Last opened books</Text>
 
       <FlatList
         className='px-4'

@@ -9,7 +9,6 @@ import { useCallback, useEffect, useState } from 'react';
 import '~/global.css';
 import { setAndroidNavigationBar } from '~/lib/android-navigation-bar';
 import { NAV_THEME } from '~/lib/constants';
-import { isOnboardingCompleted } from '~/lib/onboarding';
 import { useColorScheme } from '~/lib/useColorScheme';
 
 const LIGHT_THEME = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -41,9 +40,7 @@ export default function RootLayout() {
       try {
         const theme = await AsyncStorage.getItem('theme');
         const colorTheme = theme === 'dark' ? 'dark' : theme === 'light' ? 'light' : 'dark';
-        const completed = await isOnboardingCompleted();
 
-        setIsOnboardingComplete(completed);
         setColorScheme(colorTheme);
         setAndroidNavigationBar(colorTheme);
         setIsColorSchemeLoaded(true);
@@ -54,16 +51,6 @@ export default function RootLayout() {
 
     initializeApp();
   }, [setColorScheme]);
-
-  // useEffect(() => {
-  //   if (isColorSchemeLoaded && fontsLoaded) {
-  //     if (isOnboardingComplete) {
-  //       router.replace('/book-list');
-  //     } else {
-  //       router.replace('/');
-  //     }
-  //   }
-  // }, [isColorSchemeLoaded, fontsLoaded, isOnboardingComplete, router]);
 
   useEffect(() => {
     onAppReady();

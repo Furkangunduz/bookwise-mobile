@@ -109,6 +109,22 @@ export const useBookManagement = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const updateBook = async (updatedBook: Book) => {
+    try {
+      const updatedBooks = books.map((book) => {
+        if (book.id === updatedBook.id) {
+          return updatedBook;
+        }
+        return book;
+      });
+
+      await AsyncStorage.setItem('books', JSON.stringify(updatedBooks));
+      setBooks(updatedBooks);
+    } catch (error) {
+      console.error('Error updating book:', error);
+    }
+  };
+
   return {
     books,
     isLoading,
@@ -121,5 +137,6 @@ export const useBookManagement = () => {
     lastUploadedBook,
     selectedBook,
     setSelectedBook,
+    updateBook,
   };
 };

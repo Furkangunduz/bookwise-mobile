@@ -6,6 +6,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '~/global.css';
 import { setAndroidNavigationBar } from '~/lib/android-navigation-bar';
 import { NAV_THEME } from '~/lib/constants';
@@ -62,18 +63,20 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-      <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-        initialRouteName='book-list'
-      >
-        <Stack.Screen name='index' />
-        <Stack.Screen name='book-list' />
-        <Stack.Screen name='(onboarding)' />
-      </Stack>
-      <PortalHost />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+          initialRouteName='library'
+        >
+          <Stack.Screen name='index' />
+          <Stack.Screen name='library' />
+          <Stack.Screen name='(onboarding)' />
+        </Stack>
+        <PortalHost />
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }

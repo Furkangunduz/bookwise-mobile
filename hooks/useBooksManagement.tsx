@@ -7,8 +7,9 @@ import { Book, Metadata } from '~/lib/type';
 export const useBookManagement = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [latestPickedBook, setLatestPickedBook] = useState<Book | null>(null);
+  const [lastUploadedBook, setlastUploadedBook] = useState<Book | null>(null);
   const [booksUploading, setBooksUploading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   const loadBooks = useCallback(async () => {
     try {
@@ -34,7 +35,7 @@ export const useBookManagement = () => {
     }
   };
 
-  const pickDocument = async () => {
+  const uploadBook = async () => {
     try {
       setBooksUploading(true);
       const result = await DocumentPicker.getDocumentAsync({
@@ -66,7 +67,7 @@ export const useBookManagement = () => {
         lastReadAt: Date.now(),
       };
 
-      setLatestPickedBook(newBook);
+      setlastUploadedBook(newBook);
 
       const updatedBooks = [...books, newBook];
       await AsyncStorage.setItem('books', JSON.stringify(updatedBooks));
@@ -85,7 +86,7 @@ export const useBookManagement = () => {
       const booksJson = await AsyncStorage.getItem('books');
       const parsedBooks = booksJson ? JSON.parse(booksJson) : [];
       const updatedBooks = parsedBooks.map((book: Book) => {
-        if (book.id === latestPickedBook?.id) {
+        if (book.id === lastUploadedBook?.id) {
           return {
             ...book,
             meta,
@@ -114,9 +115,11 @@ export const useBookManagement = () => {
     booksUploading,
     loadBooks,
     handleDeleteBook,
-    pickDocument,
+    uploadBook,
     saveMetaData,
     formatFileSize,
-    latestPickedBook,
+    lastUploadedBook,
+    selectedBook,
+    setSelectedBook,
   };
 };

@@ -45,7 +45,7 @@ export default function TargetLanguage() {
       </View>
       <View className='mt-10 gap-4'>
         {languages.map((language) => (
-          <Link href={'/book-list'} asChild>
+          <Link href={'/library'} asChild>
             <Button
               key={language.label}
               className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5'

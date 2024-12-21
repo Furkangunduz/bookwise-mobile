@@ -17,7 +17,7 @@ export default function Index() {
         const completed = await isOnboardingCompleted();
 
         if (completed) {
-          router.push('/book-list');
+          router.push('/library');
         }
       } catch (error) {
         console.error('Error initializing app:', error);

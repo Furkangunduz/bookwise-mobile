@@ -35,14 +35,17 @@ export default function BooksView() {
   return (
     <SafeAreaView className='flex-1 bg-[#14161B] font-inter'>
       <Text className='my-5 text-center text-2xl text-[#83899F]'>Last opened books</Text>
+
       {booksUploading && (
-        <View className='absolute left-0 top-0 h-full w-full flex-row items-center justify-center bg-black bg-opacity-50'>
-          <Icons.Loader size={32} />
+        <View className='absolute bottom-0 left-0 right-0 top-0 z-20 h-screen w-full flex-row items-center justify-center bg-black bg-opacity-50'>
+          <View className='duration-600 animate-spin transition-all'>
+            <Icons.Loader size={45} className='animate-spin transition-all duration-100' />
+          </View>
         </View>
       )}
 
       <FlatList
-        className='px-4'
+        className='mb-20 px-4'
         data={books}
         keyExtractor={(item) => item.id}
         numColumns={2}
@@ -53,7 +56,14 @@ export default function BooksView() {
           marginBottom: 16,
         }}
         renderItem={({ item }) => (
-          <View className='overflow-hidden rounded-xl border border-border bg-card' style={{ flex: 1, margin: 8 }}>
+          <View
+            className='overflow-hidden rounded-xl border border-border bg-card'
+            style={{
+              flex: 1,
+              margin: 8,
+              maxWidth: '48%',
+            }}
+          >
             <Image
               source={item.meta?.cover ? { uri: item.meta.cover } : require('~/assets/images/book-cover-default.webp')}
               style={{
@@ -82,6 +92,16 @@ export default function BooksView() {
           </View>
         )}
       />
+
+      {/* Button positioned at the bottom */}
+      <View className='absolute bottom-14 left-0 right-0 bg-[#14161B] p-4'>
+        <Button size='lg' className='w-full rounded-2xl bg-[#8C31FF]' onPress={pickDocument}>
+          <View className='w-full flex-row items-center justify-center gap-5'>
+            <PlusSquare fill='white' stroke='#8C31FF' />
+            <Text className='text-xl font-bold text-white'>Add new book</Text>
+          </View>
+        </Button>
+      </View>
     </SafeAreaView>
   );
 }

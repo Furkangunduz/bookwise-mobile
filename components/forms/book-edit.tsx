@@ -89,7 +89,7 @@ const BookEditForm: React.FC<BookEditFormProps> = ({ selectedBook, setSelectedBo
 
           {/* Book Title */}
           <View className='mb-4'>
-            <Text className='text-sm font-medium text-gray-700'>Book Title</Text>
+            <Text className='text-sm font-medium text-white/70'>Book Title</Text>
             <Input
               className='mt-2 rounded-lg p-2 text-white'
               placeholder='Enter book title'
@@ -100,7 +100,7 @@ const BookEditForm: React.FC<BookEditFormProps> = ({ selectedBook, setSelectedBo
 
           {/* Book Cover */}
           <View className='mb-4'>
-            <Text className='text-md font-medium text-gray-700'>Book Cover</Text>
+            <Text className='text-md font-medium text-white/70'>Book Cover</Text>
             <TouchableOpacity onPress={pickImage} className='mt-2'>
               <View className='h-32 w-32 overflow-hidden rounded-xl bg-white/10'>
                 {image ? (

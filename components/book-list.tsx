@@ -16,8 +16,8 @@ const BookList: React.FC<BookListProps> = ({ books, onLongPress, formatFileSize 
       keyExtractor={(item) => item.id}
       numColumns={2}
       ListFooterComponent={<View className='h-16' />}
-      style={{ paddingHorizontal: 12 }}
-      columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
+      style={{ paddingHorizontal: 20 }}
+      columnWrapperClassName='mb-6 justify-between space-x-5'
       renderItem={({ item }) => <RenderItem book={item} onLongPress={onLongPress} formatFileSize={formatFileSize} />}
     />
   );
@@ -46,7 +46,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ book, onLongPress, formatFileSi
   };
 
   return (
-    <Pressable className='m-3 w-[48%] flex-1' onPressIn={handlePressIn} onPressOut={handlePressOut} onLongPress={handleLongPress}>
+    <Pressable className='max-w-[47%] flex-1' onPressIn={handlePressIn} onPressOut={handlePressOut} onLongPress={handleLongPress}>
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
         <View className='overflow-hidden rounded-xl border border-border bg-card'>
           <Image

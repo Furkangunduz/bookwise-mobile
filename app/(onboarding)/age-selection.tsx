@@ -16,24 +16,22 @@ export default function AgeSelection() {
   return (
     <SafeAreaView className='flex-1 bg-background px-10 py-10'>
       <View className='flex-row gap-7'>
-        <Link href={'..'} asChild>
-          <Button size={'icon'} className='m-1 bg-white/10'>
-            <Icons.ArrowLeftIcon stroke={'white'} size={18} />
+        <Link href='..' asChild>
+          <Button size='icon' className='m-1 bg-white/10'>
+            <Icons.ArrowLeftIcon stroke='white' size={18} />
           </Button>
         </Link>
         <Text className='text-3xl font-semibold text-foreground'>What's your age?</Text>
       </View>
       <View className='mt-10 gap-4'>
         {ageRanges.map((range) => (
-          <Link href={'/(onboarding)/native-language'} asChild>
-            <Button key={range.label} className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5' size={'lg'}>
-              {({ pressed }) => {
-                return (
-                  <View className='flex-row items-center gap-3' style={{ opacity: pressed ? 0.5 : 1 }}>
-                    <Text className='text-xl text-white'>{range.label}</Text>
-                  </View>
-                );
-              }}
+          <Link href='/(onboarding)/native-language' asChild key={range.label}>
+            <Button className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5' size='lg'>
+              {({ pressed }) => (
+                <View className='flex-row items-center gap-3' style={{ opacity: pressed ? 0.5 : 1 }}>
+                  <Text className='text-xl text-white'>{range.label}</Text>
+                </View>
+              )}
             </Button>
           </Link>
         ))}

@@ -47,12 +47,8 @@ export default function NativeLanguage() {
       </View>
       <View className='mt-10 gap-4'>
         {languages.map((language) => (
-          <Link href={'/(onboarding)/target-language'} asChild>
-            <Button
-              key={language.label}
-              className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5'
-              size={'lg'}
-            >
+          <Link href={'/(onboarding)/target-language'} asChild key={language.label}>
+            <Button className='items-start justify-center rounded-lg border border-foreground/20 bg-black/5' size={'lg'}>
               {({ pressed }) => {
                 return (
                   <View className='flex-row items-center gap-3' style={{ opacity: pressed ? 0.5 : 1 }}>

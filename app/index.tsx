@@ -14,7 +14,7 @@ export default function Index() {
     const initializeApp = async () => {
       try {
         const completed = await isOnboardingCompleted();
-        
+
         if (completed) {
           router.push('/library');
         }

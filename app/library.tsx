@@ -10,6 +10,7 @@ import { Icons } from '~/components/icons';
 import ReaderToGetMetaData from '~/components/reader-to-get-metadata';
 import { Button } from '~/components/ui/button';
 import { useBookManagement } from '~/hooks/useBooksManagement';
+import { completeOnboarding } from '~/lib/onboarding';
 import { Book } from '~/lib/type';
 
 export default function BooksView() {
@@ -29,6 +30,7 @@ export default function BooksView() {
   } = useBookManagement();
 
   useEffect(() => {
+    completeOnboarding();
     loadBooks();
   }, [loadBooks]);
 

@@ -16,7 +16,7 @@ const BookList: React.FC<BookListProps> = ({ books, onLongPress, formatFileSize 
       keyExtractor={(item) => item.id}
       numColumns={2}
       ListFooterComponent={<View className='h-16' />}
-      style={{ paddingHorizontal: 20 }}
+      style={{ paddingHorizontal: 20, paddingTop: 10 }}
       columnWrapperClassName='mb-6 justify-between space-x-5'
       renderItem={({ item }) => <RenderItem book={item} onLongPress={onLongPress} formatFileSize={formatFileSize} />}
     />

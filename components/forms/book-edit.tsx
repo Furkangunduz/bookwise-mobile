@@ -1,10 +1,9 @@
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Book } from '~/lib/type';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 
 interface BookEditFormProps {
   selectedBook: Book | null;
@@ -66,13 +65,16 @@ const BookEditForm: React.FC<BookEditFormProps> = ({ selectedBook, setSelectedBo
       ref={bottomSheetRef}
       index={-1}
       enablePanDownToClose
+      snapPoints={['50%']}
       onChange={(index) => {
         if (index === -1) {
           bottomSheetRef.current?.close();
           setSelectedBook(null);
         }
       }}
+      backdropComponent={BottomSheetBackdrop}
       keyboardBehavior='interactive'
+      keyboardBlurBehavior='restore'
       animateOnMount={true}
       backgroundStyle={{
         backgroundColor: '#14161b',
@@ -87,18 +89,16 @@ const BookEditForm: React.FC<BookEditFormProps> = ({ selectedBook, setSelectedBo
         <View className='px-10 py-5'>
           <Text className='mb-4 text-lg font-semibold text-white'>Edit Book Details</Text>
 
-          {/* Book Title */}
           <View className='mb-4'>
             <Text className='text-sm font-medium text-white/70'>Book Title</Text>
-            <Input
-              className='mt-2 rounded-lg p-2 text-white'
+            <BottomSheetTextInput
+              className='mt-2 rounded-lg border border-white/20 p-2 text-white'
               placeholder='Enter book title'
               value={name}
               onChangeText={(text) => setName(text)}
             />
           </View>
 
-          {/* Book Cover */}
           <View className='mb-4'>
             <Text className='text-md font-medium text-white/70'>Book Cover</Text>
             <TouchableOpacity onPress={pickImage} className='mt-2'>

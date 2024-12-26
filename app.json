@@ -2,7 +2,7 @@
   "expo": {
     "name": "BookWise Reader App",
     "slug": "book-wise",
-    "version": "0.0.1",
+    "version": "0.0.2s",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",

@@ -3,17 +3,16 @@ import { Bookmark, useReader } from '@epubjs-react-native/core';
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
-  BottomSheetTextInput,
-  BottomSheetView,
+  BottomSheetView
 } from '@gorhom/bottom-sheet';
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { BookmarkIcon, TrashIcon } from 'lucide-react-native';
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { IconButton } from '~/components/icon-button';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
-import { contrast } from '../utils';
+import { COLORS } from '~/lib/colors';
 
 interface Props {
   onClose: () => void;
@@ -21,151 +20,64 @@ interface Props {
 export type Ref = BottomSheetModalMethods;
 
 export const BookmarksList = forwardRef<Ref, Props>(({ onClose }, ref) => {
-  const {
-    bookmarks,
-    removeBookmark,
-    removeBookmarks,
-    isBookmarked,
-    updateBookmark,
-    goToLocation,
-    currentLocation,
-    theme,
-  } = useReader();
+  const snapPoints = React.useMemo(() => ['25%', '50%', '75%'], []);
+  const { bookmarks, removeBookmark, goToLocation, theme } = useReader();
 
-  const snapPoints = React.useMemo(() => ['50%', '75%'], []);
-  const [note, setNote] = useState('');
-  const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
-
-  useEffect(() => {
-    if (isBookmarked) {
-      const bookmark = bookmarks.find(
-        (item) =>
-          item.location?.start.cfi === currentLocation?.start.cfi &&
-          item.location?.end.cfi === currentLocation?.end.cfi
-      );
-
-      if (!bookmark) return;
-
-      setCurrentBookmark(bookmark);
-      setNote(bookmark.data?.note || '');
-    }
-  }, [
-    bookmarks,
-    currentLocation?.end.cfi,
-    currentLocation?.start.cfi,
-    isBookmarked,
-  ]);
+  const handleRemoveBookmark = React.useCallback(
+    (bookmark: Bookmark) => {
+      removeBookmark(bookmark);
+    },
+    [removeBookmark]
+  );
 
   return (
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={ref}
-        index={1}
-        enablePanDownToClose
         snapPoints={snapPoints}
-        handleStyle={{ backgroundColor: theme.body.background }}
+        backgroundStyle={{
+          backgroundColor: COLORS.ui.modal,
+        }}
       >
-        <BottomSheetView className="flex-1 items-center px-5 bg-background">
-          <View className="w-full flex-row justify-between items-center">
-            <Text  className="text-foreground">
-              Bookmarks
-            </Text>
-
-            {bookmarks.length > 0 && (
-              <Button
-                variant="ghost"
-                onPress={() => {
-                  removeBookmarks();
-                  onClose();
-                }}
-              >
-                <Text>
-
-                Clear All
-                </Text>
-              </Button>
-            )}
+        <BottomSheetView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Bookmarks</Text>
+            <Button
+              variant="ghost"
+              onPress={onClose}
+            >
+              <Text style={styles.closeButton}>Close</Text>
+            </Button>
           </View>
 
-          {bookmarks.length === 0 && (
-            <View className="mt-4">
-              <Text
-               
-                className="font-italic text-foreground"
-              >
-                No bookmarks...
-              </Text>
-            </View>
-          )}
-
-          {isBookmarked && (
-            <View className="w-full">
-              <BottomSheetTextInput
-                defaultValue={note}
-                className="w-full h-16 mt-2 border border-solid border-gray-200 rounded-lg p-2 bg-gray-100"
-                multiline
-                placeholder="Type an annotation here..."
-                placeholderTextColor={contrast[theme.body.background]}
-                onChangeText={(text) => setNote(text)}
-              />
-
-              <Button
-                variant="ghost"
-                className="self-end"
-                onPress={() => updateBookmark(currentBookmark!.id, { note })}
-              >
-                <Text>
-
-                Update Annotation
-                </Text>
-              </Button>
-            </View>
-          )}
-
           {bookmarks.map((bookmark) => (
-            <View key={bookmark.id} className="flex-row justify-between items-center my-1">
+            <View key={bookmark.id} style={styles.bookmarkContainer}>
               <TouchableOpacity
-                className="flex-row items-center"
+                style={styles.bookmarkInfo}
                 onPress={() => {
-                  goToLocation(bookmark.location.start.cfi);
+                  goToLocation(bookmark.location.start.location.toString());
                   onClose();
                 }}
               >
-                <View className="w-7 h-7 rounded-full mr-2.5 border border-solid">
+                <View style={styles.bookmarkIcon}>
                   <IconButton
                     icon={BookmarkIcon}
                     size={20}
-                    onPress={() => {
-                      goToLocation(bookmark.location.start.cfi);
-                      onClose();
-                    }}
+                    onPress={() => {}}
                   />
                 </View>
-
-                <View className="w-32">
-                  <Text
-                    className="font-semibold text-foreground"
-                  >
-                    Chapter: {bookmark.section?.label}
-                  </Text>
-
-                  <Text
-                    className="italic text-foreground"
-                    numberOfLines={2}
-                  >
-                    &quot;{bookmark.text}&quot;
+                <View style={styles.bookmarkInfoText}>
+                  <Text style={styles.bookmarkText}>
+                    Location: {bookmark.location.start.location}
                   </Text>
                 </View>
               </TouchableOpacity>
 
-              <IconButton
-                icon={TrashIcon}
-                size={20}
-                onPress={() => {
-                  removeBookmark(bookmark);
-                  onClose();
-                }}
-              />
+              <TouchableOpacity
+                onPress={() => handleRemoveBookmark(bookmark)}
+              >
+                <TrashIcon size={20} color={COLORS.status.error} />
+              </TouchableOpacity>
             </View>
           ))}
         </BottomSheetView>
@@ -178,46 +90,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    justifyContent: 'center',
+    backgroundColor: COLORS.ui.modal,
   },
-  contentContainer: {
-    flex: 1,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text.primary,
+  },
+  closeButton: {
+    color: COLORS.text.secondary,
   },
   bookmarkContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.background.secondary,
   },
   bookmarkInfo: {
     flexDirection: 'row',
-  },
-  bookmarkInfoText: {
-    width: '80%',
-  },
-  title: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    flex: 1,
   },
   bookmarkIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 12,
   },
-  bookmarkLocationNumber: {
-    marginTop: -12,
+  bookmarkInfoText: {
+    flex: 1,
   },
-  input: {
-    width: '100%',
-    height: 64,
-    marginTop: 8,
-    borderRadius: 10,
+  bookmarkText: {
+    color: COLORS.text.primary,
     fontSize: 16,
-    lineHeight: 20,
-    padding: 8,
-    backgroundColor: 'rgba(151, 151, 151, 0.25)',
   },
 });

@@ -11,8 +11,9 @@ import {
 import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import React, { forwardRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
-import { contrast } from '../utils';
+import { COLORS } from '~/lib/colors';
 import SearchResult from './SearchResult';
 
 interface Props {
@@ -29,14 +30,11 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
     isSearching,
     addAnnotation,
     removeAnnotationByCfi,
-    theme,
   } = useReader();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [data, setData] = useState<SearchResultType[]>(searchResults.results);
   const [page, setPage] = useState(1);
-
-  const snapPoints = React.useMemo(() => ['50%', '90%'], []);
 
   const renderItem = React.useCallback(
     ({ item }: { item: SearchResultType }) => (
@@ -52,7 +50,6 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           clearSearchResults();
           setPage(1);
           setData([]);
-
           onClose();
         }}
       />
@@ -69,16 +66,24 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
 
   const header = React.useCallback(
     () => (
-      <View>
+      <View style={styles.headerContainer}>
         <View style={styles.title}>
-          <Text
-            style={{ color: contrast[theme.body.background] }}
-          >
+          <Text style={styles.headerText}>
             Search Results
           </Text>
+
+          <Button
+            variant="ghost"
+            onPress={onClose}
+            style={styles.closeButton}
+          >
+            <Text style={styles.closeButtonText}>
+              Close
+            </Text>
+          </Button>
         </View>
 
-        <View style={{ width: '100%' }}>
+        <View style={styles.searchContainer}>
           <BottomSheetTextInput
             inputMode="search"
             returnKeyType="search"
@@ -87,8 +92,8 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
             autoCapitalize="none"
             defaultValue={searchTerm}
             style={styles.input}
-            placeholder="Type an term here..."
-            placeholderTextColor={contrast[theme.body.background]}
+            placeholder="Search in book..."
+            placeholderTextColor={COLORS.text.secondary}
             onSubmitEditing={(event) => {
               setSearchTerm(event.nativeEvent.text);
               clearSearchResults();
@@ -100,36 +105,24 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
         </View>
 
         {isSearching && (
-          <View style={styles.title}>
-            <Text
-              style={{
-                fontStyle: 'italic',
-                color: contrast[theme.body.background],
-              }}
-            >
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>
               Searching results...
             </Text>
           </View>
         )}
       </View>
     ),
-    [clearSearchResults, isSearching, search, searchTerm, theme.body.background]
+    [clearSearchResults, isSearching, onClose, search, searchTerm]
   );
 
   const footer = React.useCallback(
     () => (
-      <View style={styles.title}>
+      <View style={styles.footerContainer}>
         {isSearching && (
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <ActivityIndicator animating />
-
-            <Text
-              style={{
-                fontStyle: 'italic',
-                marginLeft: 5,
-                color: contrast[theme.body.background],
-              }}
-            >
+          <View style={styles.loadingRow}>
+            <ActivityIndicator color={COLORS.text.primary} />
+            <Text style={styles.loadingText}>
               fetching results...
             </Text>
           </View>
@@ -138,46 +131,32 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
         {data.length > 0 &&
           data.length === searchResults.totalResults &&
           !isSearching && (
-            <Text
-              style={{
-                fontStyle: 'italic',
-                color: contrast[theme.body.background],
-              }}
-            >
+            <Text style={styles.noMoreText}>
               No more results at the moment...
             </Text>
           )}
       </View>
     ),
-    [
-      data.length,
-      isSearching,
-      searchResults.totalResults,
-      theme.body.background,
-    ]
+    [data.length, isSearching, searchResults.totalResults]
   );
 
   const empty = React.useCallback(
     () => (
-      <View style={styles.title}>
-        <Text
-          style={{
-            fontStyle: 'italic',
-            color: contrast[theme.body.background],
-          }}
-        >
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>
           No results...
         </Text>
       </View>
     ),
-    [theme.body.background]
+    []
   );
 
   const handleClose = React.useCallback(() => {
     clearSearchResults();
     setPage(1);
     setData([]);
-  }, [clearSearchResults]);
+    onClose();
+  }, [clearSearchResults, onClose]);
 
   const fetchMoreData = React.useCallback(() => {
     if (searchResults.results.length > 0 && !isSearching) {
@@ -197,10 +176,13 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={snapPoints}
+        snapPoints={['60%']}
         enablePanDownToClose
         style={styles.container}
-        backgroundStyle={{ backgroundColor: theme.body.background }}
+        handleStyle={styles.handle}
+        backgroundStyle={styles.background}
+        handleIndicatorStyle={styles.handleIndicator}
+        android_keyboardInputMode="adjustResize"
         onDismiss={handleClose}
       >
         <BottomSheetFlatList<SearchResultType>
@@ -211,7 +193,8 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
           ListHeaderComponent={header}
           ListFooterComponent={footer}
           ListEmptyComponent={empty}
-          style={{ width: '100%' }}
+          style={styles.flatList}
+          contentContainerStyle={styles.flatListContent}
           maxToRenderPerBatch={20}
           onEndReachedThreshold={0.2}
           onEndReached={fetchMoreData}
@@ -223,23 +206,110 @@ export const SearchList = forwardRef<Ref, Props>(({ onClose }, ref) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    zIndex: 999999,
+    elevation: 24,
+    position: 'relative',
+  },
+  background: {
+    backgroundColor: COLORS.background.modal,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  headerContainer: {
+    paddingTop: 8,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.background.secondary,
   },
   title: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
+    marginBottom: 16,
+  },
+  headerText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+    letterSpacing: 0.35,
+  },
+  closeButton: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: COLORS.background.secondary,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: COLORS.text.primary,
+    opacity: 0.9,
+  },
+  searchContainer: {
+    marginTop: 12,
+    paddingHorizontal: 4,
   },
   input: {
     width: '100%',
-    borderRadius: 10,
+    borderRadius: 12,
     fontSize: 16,
     lineHeight: 20,
-    padding: 8,
-    backgroundColor: 'rgba(151, 151, 151, 0.25)',
+    padding: 12,
+    backgroundColor: COLORS.background.secondary,
+    color: COLORS.text.primary,
+  },
+  loadingContainer: {
+    marginTop: 12,
+  },
+  loadingText: {
+    color: COLORS.text.secondary,
+    fontStyle: 'italic',
+    marginLeft: 8,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  footerContainer: {
+    paddingVertical: 16,
+  },
+  noMoreText: {
+    color: COLORS.text.secondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: COLORS.text.secondary,
+    fontStyle: 'italic',
+  },
+  handle: {
+    backgroundColor: COLORS.background.modal,
+  },
+  handleIndicator: {
+    backgroundColor: COLORS.text.secondary,
+    width: 32,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  flatList: {
+    width: '100%',
+  },
+  flatListContent: {
+    paddingBottom: 24,
   },
 });

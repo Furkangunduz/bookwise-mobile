@@ -38,7 +38,6 @@ export const useBookManagement = () => {
 
   const uploadBook = async () => {
     try {
-      setBooksUploading(true);
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/epub+zip', 'application/pdf'],
         copyToCacheDirectory: false,
@@ -46,6 +45,7 @@ export const useBookManagement = () => {
 
       if (result.canceled) return;
 
+      setBooksUploading(true);
       const file = result.assets[0];
 
       if (!file.mimeType?.includes('epub') && !file.mimeType?.includes('pdf')) {
@@ -58,10 +58,12 @@ export const useBookManagement = () => {
         return;
       }
 
-      const bookDir = `${FileSystem.cacheDirectory}books/${Date.now()}`;
+      const bookDir = `${FileSystem.documentDirectory}books`;
       await FileSystem.makeDirectoryAsync(bookDir, { intermediates: true });
       
-      const newUri = `${bookDir}/${file.name}`;
+      const safeFileName = file.name.replace(/ /g, '%20');
+      const newUri = `${bookDir}/${safeFileName}`;
+      
       await FileSystem.copyAsync({
         from: file.uri,
         to: newUri
@@ -82,7 +84,7 @@ export const useBookManagement = () => {
       const updatedBooks = [...books, newBook];
       await AsyncStorage.setItem('books', JSON.stringify(updatedBooks));
       setBooks(updatedBooks.sort((a, b) => b.addedAt - a.addedAt));
-      Alert.alert('Success', 'Book added successfully!');
+
     } catch (error) {
       console.error('Error picking document:', error);
       Alert.alert('Error', 'Failed to upload book');
@@ -106,6 +108,7 @@ export const useBookManagement = () => {
       });
       await AsyncStorage.setItem('books', JSON.stringify(updatedBooks));
       setBooks(updatedBooks);
+      setlastUploadedBook(null);
     } catch (error) {
       console.error('Error saving metadata:', error);
     }

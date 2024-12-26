@@ -17,6 +17,7 @@ import {
   ZoomIn,
   ZoomOut
 } from 'lucide-react-native';
+import { COLORS } from '~/lib/colors';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE } from '../utils';
 
 interface Props {
@@ -77,80 +78,59 @@ export function Header({
       onLongPress={onLongPress}
       disabled={disabled}
       className="p-2 rounded-full"
+      style={styles.iconButton}
     >
-      <Icon size={size} color="#ffffff" strokeWidth={2} />
+      <Icon size={size} color={COLORS.text.primary} strokeWidth={2} />
     </TouchableOpacity>
   );
 
   return (
-    <View className="flex-row items-center justify-between px-4 py-3">
-      <IconButton
-        icon={ArrowLeft}
-        size={22}
-        onPress={() => navigation.goBack()}
-      />
+    <View style={styles.container}>
+      <View style={styles.leftSection}>
+        <IconButton
+          icon={ArrowLeft}
+          onPress={() => navigation.goBack()}
+        />
+      </View>
 
-      <View className="flex-row items-center justify-end">
-        {showSettings && (
-          <TouchableOpacity
-            onPress={switchTheme}
-            className="w-6 h-6 rounded-full border-2 border-white mr-2.5"
-            style={{ backgroundColor: theme.body.background }}
-          />
+      <View style={styles.rightSection}>
+        {showSettings ? (
+          <>
+            <IconButton
+              icon={ZoomOut}
+              onPress={decreaseFontSize}
+              disabled={currentFontSize <= MIN_FONT_SIZE}
+            />
+            <IconButton
+              icon={ZoomIn}
+              onPress={increaseFontSize}
+              disabled={currentFontSize >= MAX_FONT_SIZE}
+            />
+            <IconButton
+              icon={Type}
+              onPress={switchFontFamily}
+            />
+          </>
+        ) : (
+          <>
+            <IconButton
+              icon={Search}
+              onPress={onPressSearch}
+            />
+            <IconButton
+              icon={isBookmarked ? BookmarkPlus : Bookmark}
+              onPress={handleChangeBookmark}
+            />
+            <IconButton
+              icon={Highlighter}
+              onPress={onOpenAnnotationsList}
+            />
+            <IconButton
+              icon={List}
+              onPress={onOpenTableOfContents}
+            />
+          </>
         )}
-
-        {showSettings && (
-          <IconButton
-            icon={ZoomIn}
-            onPress={increaseFontSize}
-            disabled={currentFontSize === MAX_FONT_SIZE}
-          />
-        )}
-
-        {showSettings && (
-          <IconButton
-            icon={ZoomOut}
-            onPress={decreaseFontSize}
-            disabled={currentFontSize === MIN_FONT_SIZE}
-          />
-        )}
-
-        {showSettings && (
-          <IconButton
-            icon={Type}
-            onPress={switchFontFamily}
-          />
-        )}
-
-        {!showSettings && (
-          <IconButton
-            icon={Search}
-            onPress={onPressSearch}
-          />
-        )}
-
-        {!showSettings && (
-          <IconButton
-            icon={isBookmarked ? Bookmark : BookmarkPlus}
-            onPress={handleChangeBookmark}
-            onLongPress={onOpenBookmarksList}
-          />
-        )}
-
-        {!showSettings && (
-          <IconButton
-            icon={Highlighter}
-            onPress={onOpenAnnotationsList}
-          />
-        )}
-
-        {!showSettings && (
-          <IconButton
-            icon={List}
-            onPress={onOpenTableOfContents}
-          />
-        )}
-
         <IconButton
           icon={showSettings ? Settings : SettingsIcon}
           onPress={() => setShowSettings((oldState) => !oldState)}
@@ -165,23 +145,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: 10,
-    backgroundColor: 'red',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.ui.header,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.background.secondary,
   },
-  themeIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 32,
-    borderWidth: 2,
-    marginRight: 10,
-  },
-  actions: {
+  leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   iconButton: {
-    padding: 8,
-    borderRadius: 20,
+    backgroundColor: COLORS.background.secondary,
   },
 });

@@ -5,15 +5,15 @@ import {
   useReader
 } from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/expo-file-system';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetProps } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBookManagement } from '~/hooks/useBooksManagement';
+import { COLORS } from '~/lib/colors';
 import { Book } from '~/lib/type';
-import { COLORS } from './components/AnnotationForm';
 import { AnnotationsList } from './components/AnnotationsList';
 import { BookmarksList } from './components/BookmarksList';
 import { SearchList } from './components/SearchList';
@@ -64,6 +64,7 @@ function Component({ book }: { book: Book }) {
   const [selectedAnnotation, setSelectedAnnotation] = React.useState<
     Annotation | undefined
   >(undefined);
+  const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
   const increaseFontSize = () => {
     if (currentFontSize < MAX_FONT_SIZE) {
@@ -99,16 +100,64 @@ function Component({ book }: { book: Book }) {
     changeFontFamily(nextFontFamily);
   };
 
+  const closeAllSheets = useCallback(() => {
+    bookmarksListRef.current?.dismiss();
+    searchListRef.current?.dismiss();
+    tableOfContentsRef.current?.dismiss();
+    annotationsListRef.current?.dismiss();
+    setActiveSheet(null);
+  }, []);
+
+  const openSheet = useCallback((sheetName: string, ref: React.RefObject<BottomSheetModal>) => {
+    if (activeSheet && activeSheet !== sheetName) {
+      closeAllSheets();
+      setTimeout(() => {
+        ref.current?.present();
+        setActiveSheet(sheetName);
+      }, 100);
+    } else {
+      ref.current?.present();
+      setActiveSheet(sheetName);
+    }
+  }, [activeSheet, closeAllSheets]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+        opacity={0.7}
+      />
+    ),
+    []
+  );
+
+  const sheetProps: Partial<BottomSheetProps> = {
+    snapPoints: ['60%'],
+    index: 0,
+    handleIndicatorStyle: styles.handleIndicator,
+    backgroundStyle: styles.bottomSheetBackground,
+    containerStyle: styles.bottomSheetContainer,
+    backdropComponent: renderBackdrop,
+    enablePanDownToClose: true,
+    enableDynamicSizing: true,
+    android_keyboardInputMode: 'adjustResize',
+  };
+
+  const HIGHLIGHT_COLORS = {
+    yellow: COLORS.highlight.yellow,
+    red: COLORS.highlight.red,
+    green: COLORS.highlight.green,
+  };
+
   return (
     <GestureHandlerRootView
-      style={{
-        flex: 1,
+      style={[styles.container, {
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
-        backgroundColor: '#14161B',
-      }}
+      }]}
     >
       {!isFullScreen && (
         <Header
@@ -117,134 +166,175 @@ function Component({ book }: { book: Book }) {
           decreaseFontSize={decreaseFontSize}
           switchTheme={switchTheme}
           switchFontFamily={switchFontFamily}
-          onPressSearch={() => searchListRef.current?.present()}
-          onOpenBookmarksList={() => bookmarksListRef.current?.present()}
-          onOpenTableOfContents={() => tableOfContentsRef.current?.present()}
-          onOpenAnnotationsList={() => annotationsListRef.current?.present()}
+          onPressSearch={() => openSheet('search', searchListRef)}
+          onOpenBookmarksList={() => openSheet('bookmarks', bookmarksListRef)}
+          onOpenTableOfContents={() => openSheet('toc', tableOfContentsRef)}
+          onOpenAnnotationsList={() => openSheet('annotations', annotationsListRef)}
         />
       )}
 
-      <Reader
-        src={book.uri}
-        width={width}
-        height={!isFullScreen ? height * 0.75 : height}
-        fileSystem={useFileSystem}
-        defaultTheme={myCustomTheme}
-        initialLocation="introduction_001.xhtml"
-        enableSwipe
-        spread='always'
-        onLocationChange={(totalLocations, currentLocation) => {
-          // Handle location changes and manage content loading
-          console.log('Location changed:', JSON.stringify({ totalLocations, currentLocation }, null,2));
-        }}
-        // initialAnnotations={[
-        //   // Chapter 1
-        //   {
-        //     cfiRange: 'epubcfi(/6/10!/4/2/4,/1:0,/1:319)',
-        //     data: {},
-        //     sectionIndex: 4,
-        //     styles: { color: '#00ff00' },
-        //     cfiRangeText:
-        //       'The pale Usher—threadbare in coat, heart, body, and brain; I see him now. He was ever dusting his old lexicons and grammars, with a queer handkerchief, mockingly embellished with all the gay flags of all the known nations of the world. He loved to dust his old grammars; it somehow mildly reminded him of his mortality.',
-        //     type: 'highlight',
-        //   },
-        //   // Chapter 5
-        //   {
-        //     cfiRange: 'epubcfi(/6/22!/4/2/4,/1:80,/1:88)',
-        //     data: {},
-        //     sectionIndex: 3,
-        //     styles: { color: '#CBA135' },
-        //     cfiRangeText: 'landlord',
-        //     type: 'highlight',
-        //   },
-        // ]}
-         onAddAnnotation={(annotation) => {
-          if (annotation.type === 'highlight' && annotation.data?.isTemp) {
-            setTempMark(annotation);
-          }
-        }}
-        onPressAnnotation={(annotation) => {
-          setSelectedAnnotation(annotation);
-          annotationsListRef.current?.present();
-        }}
-        menuItems={[
-          {
-            label: '🟡',
-            action: (cfiRange) => {
-              addAnnotation('highlight', cfiRange, undefined, {
-                color: COLORS[2],
-              });
-              return true;
+      <View style={{ flex: 1, width: '100%', backgroundColor:theme?.body?.background   }}>
+        <Reader
+          src={book.uri}
+          width={width}
+          height={!isFullScreen ? height * 0.75 : height}
+          fileSystem={useFileSystem}
+          defaultTheme={myCustomTheme}
+          enableSwipe
+          spread='always'
+          onLocationChange={(totalLocations, currentLocation) => {
+            console.log('Location changed:', JSON.stringify({ totalLocations, currentLocation }, null,2));
+          }}
+          onAddAnnotation={(annotation) => {
+            if (annotation.type === 'highlight' && annotation.data?.isTemp) {
+              setTempMark(annotation);
+            }
+          }}
+          onPressAnnotation={(annotation) => {
+            setSelectedAnnotation(annotation);
+            annotationsListRef.current?.present();
+          }}
+          menuItems={[
+            {
+              label: '🟡',
+              action: (cfiRange) => {
+                addAnnotation('highlight', cfiRange, undefined, {
+                  color: HIGHLIGHT_COLORS.yellow,
+                });
+                return true;
+              },
             },
-          },
-          {
-            label: '🔴',
-            action: (cfiRange) => {
-              addAnnotation('highlight', cfiRange, undefined, {
-                color: COLORS[0],
-              });
-              return true;
+            {
+              label: '🔴',
+              action: (cfiRange) => {
+                addAnnotation('highlight', cfiRange, undefined, {
+                  color: HIGHLIGHT_COLORS.red,
+                });
+                return true;
+              },
             },
-          },
-          {
-            label: '🟢',
-            action: (cfiRange) => {
-              addAnnotation('highlight', cfiRange, undefined, {
-                color: COLORS[3],
-              });
-              return true;
+            {
+              label: '🟢',
+              action: (cfiRange) => {
+                addAnnotation('highlight', cfiRange, undefined, {
+                  color: HIGHLIGHT_COLORS.green,
+                });
+                return true;
+              },
             },
-          },
-          {
-            label: 'Add Note',
-            action: (cfiRange, text) => {
-              setSelection({ cfiRange, text });
-              addAnnotation('highlight', cfiRange, { isTemp: true });
-              annotationsListRef.current?.present();
-              return true;
+            {
+              label: 'Add Note',
+              action: (cfiRange, text) => {
+                setSelection({ cfiRange, text });
+                addAnnotation('highlight', cfiRange, { isTemp: true });
+                openSheet('annotations', annotationsListRef);
+                return true;
+              },
             },
-          },
-        ]}
-        onDoublePress={() => setIsFullScreen((oldState) => !oldState)}
-      />
+          ]}
+          onDoublePress={() => setIsFullScreen((oldState) => !oldState)}
+        />
+      </View>
 
-      <BookmarksList
-        ref={bookmarksListRef}
-        onClose={() => bookmarksListRef.current?.dismiss()}
-      />
+      <View style={styles.footerContainer}>
+        <Footer />
+      </View>
 
-      <SearchList
-        ref={searchListRef}
-        onClose={() => searchListRef.current?.dismiss()}
-      />
+      <View style={styles.bottomSheetsContainer}>
+        <BookmarksList
+          ref={bookmarksListRef}
+          onClose={() => {
+            bookmarksListRef.current?.dismiss();
+            setActiveSheet(null);
+          }}
+          {...sheetProps}
+        />
 
-      <TableOfContents
-        ref={tableOfContentsRef}
-        onClose={() => tableOfContentsRef.current?.dismiss()}
-        onPressSection={(selectedSection) => {
-          goToLocation(selectedSection.href.split('/')[1]);
-          tableOfContentsRef.current?.dismiss();
-        }}
-      />
+        <SearchList
+          ref={searchListRef}
+          onClose={() => {
+            searchListRef.current?.dismiss();
+            setActiveSheet(null);
+          }}
+          {...sheetProps}
+        />
 
-      <AnnotationsList
-        ref={annotationsListRef}
-        selection={selection}
-        selectedAnnotation={selectedAnnotation}
-        annotations={annotations}
-        onClose={() => {
-          setTempMark(null);
-          setSelection(null);
-          setSelectedAnnotation(undefined);
-          if (tempMark) removeAnnotation(tempMark);
-          annotationsListRef.current?.dismiss();
-        }}
-      />
+        <TableOfContents
+          ref={tableOfContentsRef}
+          onClose={() => {
+            tableOfContentsRef.current?.dismiss();
+            setActiveSheet(null);
+          }}
+          onPressSection={(selectedSection) => {
+            goToLocation(selectedSection.href.split('/')[1]);
+            tableOfContentsRef.current?.dismiss();
+            setActiveSheet(null);
+          }}
+          {...sheetProps}
+        />
 
-      {!isFullScreen && <Footer />}
+        <AnnotationsList
+          ref={annotationsListRef}
+          selection={selection}
+          selectedAnnotation={selectedAnnotation}
+          annotations={annotations}
+          onClose={() => {
+            setTempMark(null);
+            setSelection(null);
+            setSelectedAnnotation(undefined);
+            if (tempMark) removeAnnotation(tempMark);
+            annotationsListRef.current?.dismiss();
+            setActiveSheet(null);
+          }}
+          {...sheetProps}
+        />
+      </View>
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background.primary,
+  },
+  bottomSheetBackground: {
+    backgroundColor: COLORS.background.modal,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bottomSheetContainer: {
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  handleIndicator: {
+    backgroundColor: COLORS.text.secondary,
+    width: 32,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  footerContainer: {
+    zIndex: 1,
+  },
+  bottomSheetsContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+    pointerEvents: 'box-none',
+  },
+});
 
 export default function FullExample() {
   const { id } = useLocalSearchParams<{ id: string }>();

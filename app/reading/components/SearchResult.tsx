@@ -1,14 +1,14 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
-  SearchResult as SearchResultType,
-  useReader,
+    SearchResult as SearchResultType
 } from '@epubjs-react-native/core';
 import { Bookmark } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
+import { COLORS } from '~/lib/colors';
 
 interface Props {
   searchTerm: string;
@@ -17,44 +17,43 @@ interface Props {
 }
 
 function SearchResult({ searchTerm, searchResult, onPress }: Props) {
-  const { theme } = useReader();
-
   const regex = new RegExp(`(${searchTerm})`, 'gi');
   const parts = searchResult.excerpt.split(regex);
+
   return (
     <TouchableOpacity
-      className="w-full flex-row justify-between items-center my-2.5"
+      style={styles.container}
       onPress={() => onPress(searchResult)}
     >
-      <View className="justify-center items-center">
+      <View style={styles.iconContainer}>
         <Button
           variant="ghost"
           size="icon"
-          className={"text-muted-foreground"}
+          style={styles.iconButton}
         >
-          <Bookmark className="h-5 w-5" />
+          <Bookmark size={20} color={COLORS.text.secondary} />
         </Button>
       </View>
 
-      <View className="w-[85%]">
+      <View style={styles.contentContainer}>
         <Text
           numberOfLines={1}
-          className="mb-0.5 text-foreground"
+          style={styles.chapterText}
         >
           Chapter: {searchResult.section?.label}
         </Text>
 
-        <Text className="italic text-foreground">
+        <Text style={styles.excerptText}>
           &quot;
           {parts.filter(String).map((part, index) => {
             return regex.test(part) ? (
-              <Text className="bg-yellow-200 text-foreground" key={`${index}-part-highlight`}>
+              <Text style={styles.highlightText} key={`${index}-part-highlight`}>
                 {part}
               </Text>
             ) : (
               <Text
                 key={`${index}-part`}
-                className="text-foreground"
+                style={styles.normalText}
               >
                 {part}
               </Text>
@@ -74,17 +73,36 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
+    paddingHorizontal: 4,
   },
-  icon: {
+  iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  info: {
-    width: '85%',
+  iconButton: {
+    backgroundColor: COLORS.background.secondary,
   },
-  chapter: { marginBottom: 2 },
-  excerpt: { fontStyle: 'italic' },
-  highlight: { backgroundColor: 'yellow' },
+  contentContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  chapterText: {
+    fontSize: 16,
+    color: COLORS.text.primary,
+    marginBottom: 4,
+  },
+  excerptText: {
+    fontSize: 14,
+    color: COLORS.text.secondary,
+    fontStyle: 'italic',
+  },
+  highlightText: {
+    backgroundColor: COLORS.highlight.yellow,
+    color: COLORS.text.primary,
+  },
+  normalText: {
+    color: COLORS.text.secondary,
+  },
 });
 
 export default SearchResult;

@@ -1,17 +1,18 @@
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { PlusSquare } from 'lucide-react-native';
-import { useEffect, useRef } from 'react';
-import { Image, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BookList from '~/components/book-list';
 import BookEditForm from '~/components/forms/book-edit';
-import { Icons } from '~/components/icons';
 import ReaderToGetMetaData from '~/components/reader-to-get-metadata';
 import { Button } from '~/components/ui/button';
 import { useBookManagement } from '~/hooks/useBooksManagement';
+import { COLORS } from '~/lib/colors';
 import { completeOnboarding } from '~/lib/onboarding';
 import { Book } from '~/lib/type';
+
 
 export default function BooksView() {
   const {
@@ -29,6 +30,8 @@ export default function BooksView() {
     updateBook,
     deleteAllBooks,
   } = useBookManagement();
+
+  const [messageIndex, setMessageIndex] = useState(0);
 
   useEffect(() => {
     completeOnboarding();
@@ -55,7 +58,12 @@ export default function BooksView() {
             <Text className='text-xl font-bold text-white'>Add new book</Text>
           </View>
         </Button>
-        {lastUploadedBook && <ReaderToGetMetaData src={lastUploadedBook?.uri ?? null} setMetaData={saveMetaData} />}
+        {lastUploadedBook?.type.includes('epub') && !lastUploadedBook.meta && (
+          <ReaderToGetMetaData 
+            src={lastUploadedBook?.uri ?? null} 
+            setMetaData={saveMetaData} 
+          />
+        )}
       </SafeAreaView>
     );
   }
@@ -64,13 +72,18 @@ export default function BooksView() {
     <SafeAreaView className='flex-1 bg-[#14161B] font-inter'>
       <Text className='my-5 text-center text-2xl text-[#83899F]'>Last opened books</Text>
 
-      {booksUploading && (
-        <View className='absolute bottom-0 left-0 right-0 top-0 z-20 h-screen w-full flex-row items-center justify-center bg-black bg-opacity-50'>
-          <View className='duration-600 animate-spin transition-all'>
-            <Icons.Loader size={45} className='animate-spin transition-all duration-100' />
+      {/* {booksUploading && (
+        <BlurView intensity={30} tint="dark" style={styles.loadingOverlay}>
+          <View style={styles.loadingContent}>
+            <View className='duration-600 animate-spin transition-all'>
+              <Icons.Loader size={45} className='animate-spin transition-all duration-100' />
+            </View>
+            <Text style={styles.loadingText}>
+              {uploadingMessages[messageIndex]}
+            </Text>
           </View>
-        </View>
-      )}
+        </BlurView>
+      )} */}
 
       <BookList books={books} onLongPress={handleLongPress} formatFileSize={formatFileSize} />
 
@@ -82,7 +95,37 @@ export default function BooksView() {
           </View>
         </Button>
       </View>
-      <BookEditForm selectedBook={selectedBook} setSelectedBook={setSelectedBook} bottomSheetRef={bottomSheetRef} updateBook={updateBook} />
+      <BookEditForm 
+        selectedBook={selectedBook} 
+        setSelectedBook={setSelectedBook} 
+        bottomSheetRef={bottomSheetRef} 
+        updateBook={updateBook}
+        handleDeleteBook={handleDeleteBook}
+      />
+      {lastUploadedBook?.type.includes('epub') && !lastUploadedBook.meta && (
+        <ReaderToGetMetaData 
+          src={lastUploadedBook?.uri ?? null} 
+          setMetaData={saveMetaData} 
+        />
+      )}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+  },
+  loadingContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: COLORS.text.primary,
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+});

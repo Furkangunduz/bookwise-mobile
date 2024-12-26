@@ -27,6 +27,7 @@ export default function BooksView() {
     selectedBook,
     setSelectedBook,
     updateBook,
+    deleteAllBooks,
   } = useBookManagement();
 
   useEffect(() => {
@@ -81,7 +82,6 @@ export default function BooksView() {
           </View>
         </Button>
       </View>
-
       <BookEditForm selectedBook={selectedBook} setSelectedBook={setSelectedBook} bottomSheetRef={bottomSheetRef} updateBook={updateBook} />
     </SafeAreaView>
   );

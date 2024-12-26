@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { Book, Metadata } from '~/lib/type';
@@ -40,7 +41,7 @@ export const useBookManagement = () => {
       setBooksUploading(true);
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/epub+zip', 'application/pdf'],
-        copyToCacheDirectory: true,
+        copyToCacheDirectory: false,
       });
 
       if (result.canceled) return;
@@ -57,10 +58,19 @@ export const useBookManagement = () => {
         return;
       }
 
+      const bookDir = `${FileSystem.cacheDirectory}books/${Date.now()}`;
+      await FileSystem.makeDirectoryAsync(bookDir, { intermediates: true });
+      
+      const newUri = `${bookDir}/${file.name}`;
+      await FileSystem.copyAsync({
+        from: file.uri,
+        to: newUri
+      });
+
       const newBook: Book = {
         id: Date.now().toString(),
         name: file.name,
-        uri: file.uri,
+        uri: newUri,
         type: file.mimeType || 'application/octet-stream',
         size: file.size,
         addedAt: Date.now(),
@@ -125,6 +135,24 @@ export const useBookManagement = () => {
     }
   };
 
+  const findBookById = async (id: string) => {
+    try {
+      const booksJson = await AsyncStorage.getItem('books');
+      const books: Book[] = booksJson ? JSON.parse(booksJson) : [];
+
+      return books?.find((book) => book.id === id);
+    } catch (error) {}
+  };
+
+  const deleteAllBooks = async () => {
+    try {
+      await AsyncStorage.removeItem('books');
+      setBooks([]);
+    } catch (error) {
+      console.error('Error deleting all books:', error);
+    }
+  };
+
   return {
     books,
     isLoading,
@@ -138,5 +166,7 @@ export const useBookManagement = () => {
     selectedBook,
     setSelectedBook,
     updateBook,
+    findBookById,
+    deleteAllBooks,
   };
 };

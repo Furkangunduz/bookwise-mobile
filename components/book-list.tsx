@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
 import { Animated, FlatList, Image, Pressable, Text, View } from 'react-native';
 import { Book } from '~/lib/type';
@@ -31,6 +32,7 @@ interface RenderItemProps {
 
 const RenderItem: React.FC<RenderItemProps> = ({ book, onLongPress, formatFileSize }) => {
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const router = useRouter();
 
   const handlePressIn = () => {
     Animated.spring(scaleValue, { toValue: 1.05, useNativeDriver: true }).start();
@@ -45,8 +47,19 @@ const RenderItem: React.FC<RenderItemProps> = ({ book, onLongPress, formatFileSi
     onLongPress(book);
   };
 
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/reading/${book.id}`);
+  };
+
   return (
-    <Pressable className='max-w-[47%] flex-1' onPressIn={handlePressIn} onPressOut={handlePressOut} onLongPress={handleLongPress}>
+    <Pressable
+      className='max-w-[47%] flex-1'
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onLongPress={handleLongPress}
+      onPress={handlePress}
+    >
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
         <View className='overflow-hidden rounded-xl border border-border bg-card'>
           <Image

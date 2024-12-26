@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, Book, Loader, Plus, Trash } from 'lucide-react-native';
+import { ArrowLeftIcon, Book, IndentDecrease, IndentIncrease, Loader, Plus, Search, Trash } from 'lucide-react-native';
 import { View } from 'react-native';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {}
@@ -9,6 +9,9 @@ export const Icons = {
   Plus,
   Trash,
   Loader,
+  IndentDecrease,
+  IndentIncrease,
+  Search,
   example: (asd: IconProps) => {
     return <View />;
   },

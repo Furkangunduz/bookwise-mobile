@@ -8,9 +8,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '~/global.css';
+import { useColorScheme } from '~/hooks/useColorScheme';
 import { setAndroidNavigationBar } from '~/lib/android-navigation-bar';
 import { NAV_THEME } from '~/lib/constants';
-import { useColorScheme } from '~/lib/useColorScheme';
 
 const LIGHT_THEME = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME = { ...DarkTheme, colors: NAV_THEME.dark };
